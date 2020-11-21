@@ -54,7 +54,7 @@ public class SodiumGameOptionPages {
                         .setBinding((opts, value) -> {
                             opts.quality.enableClouds = value;
 
-                            if (Minecraft.func_238218_y_()) {
+                            if (Minecraft.isFabulousGraphicsEnabled()) {
                                 Framebuffer framebuffer = Minecraft.getInstance().worldRenderer.func_239232_u_();
                                 if (framebuffer != null) {
                                     framebuffer.framebufferClear(Minecraft.IS_RUNNING_ON_MAC);
@@ -144,8 +144,8 @@ public class SodiumGameOptionPages {
                         .setTooltip(I18n.format("sodium.options.graphics_quality.tooltip"))
                         .setControl(option -> new CyclingControl<>(option, GraphicsFanciness.class, new String[] { I18n.format("options.graphics.fast"), I18n.format("options.graphics.fancy"), I18n.format("options.graphics.fabulous") }))
                         .setBinding(
-                                (opts, value) -> opts.field_238330_f_ = value,
-                                opts -> opts.field_238330_f_)
+                                (opts, value) -> opts.graphicFanciness = value,
+                                opts -> opts.graphicFanciness)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
                 .build());
@@ -187,7 +187,7 @@ public class SodiumGameOptionPages {
                         .setName(I18n.format("options.entityDistanceScaling"))
                         .setTooltip(I18n.format("sodium.options.entity_distance.tooltip"))
                         .setControl(option -> new SliderControl(option, 50, 500, 25, ControlValueFormatter.percentage()))
-                        .setBinding((opts, value) -> opts.field_238329_c_ = value / 100.0F, opts -> Math.round(opts.field_238329_c_ * 100.0F))
+                        .setBinding((opts, value) -> opts.entityDistanceScaling = value / 100.0F, opts -> Math.round(opts.entityDistanceScaling * 100.0F))
                         .build()
                 )
                 .add(OptionImpl.createBuilder(boolean.class, vanillaOpts)

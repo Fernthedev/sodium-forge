@@ -16,9 +16,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.Queue;
@@ -33,8 +33,10 @@ public class MixinParticleManager {
 
     private ClippingHelper cullingFrustum;
 
-    @Inject(method = "renderParticles", at = @At("HEAD"))
-    private void preRenderParticles(MatrixStack matrixStack, IRenderTypeBuffer.Impl immediate, LightTexture lightmapTextureManager, ActiveRenderInfo camera, float f, CallbackInfo ci) {
+
+
+    @Inject(method = "renderParticles(Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer$Impl;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/renderer/ActiveRenderInfo;FLnet/minecraft/client/renderer/culling/ClippingHelper;)V", at = @At("HEAD"), remap = false)
+    private void preRenderParticles(MatrixStack matrixStack, IRenderTypeBuffer.Impl immediate, LightTexture lightmapTextureManager, ActiveRenderInfo camera, float partialTicks, @Nullable net.minecraft.client.renderer.culling.ClippingHelper clippingHelper, CallbackInfo callbackInfo) {
         ClippingHelper frustum = SodiumWorldRenderer.getInstance().getFrustum();
         boolean useCulling = SodiumClientMod.options().advanced.useParticleCulling;
 
@@ -47,8 +49,9 @@ public class MixinParticleManager {
     }
 
     @SuppressWarnings({ "SuspiciousMethodCalls", "unchecked" })
-    @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
-    private <V> V filterParticleList(Map<IParticleRenderType, Queue<Particle>> map, Object key, MatrixStack matrixStack, IRenderTypeBuffer.Impl immediate, LightTexture lightmapTextureManager, ActiveRenderInfo camera, float f) {
+    // TODO: Remove, no longer needed
+//    @Redirect(method = "renderParticles(Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer$Impl;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/renderer/ActiveRenderInfo;F)V", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
+    private <V> V filterParticleList(Map<IParticleRenderType, Queue<Particle>> map, Object key, MatrixStack matrixStack, IRenderTypeBuffer.Impl immediate, LightTexture lightmapTextureManager, ActiveRenderInfo camera, float f, CallbackInfo info) {
         Queue<Particle> queue = this.byType.get(key);
 
         if (queue == null || queue.isEmpty()) {
@@ -76,8 +79,8 @@ public class MixinParticleManager {
         return (V) filtered;
     }
 
-    @Inject(method = "renderParticles", at = @At("RETURN"))
-    private void postRenderParticles(MatrixStack matrixStack, IRenderTypeBuffer.Impl immediate, LightTexture lightmapTextureManager, ActiveRenderInfo camera, float f, CallbackInfo ci) {
+    @Inject(method = "renderParticles(Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer$Impl;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/renderer/ActiveRenderInfo;FLnet/minecraft/client/renderer/culling/ClippingHelper;)V", at = @At("RETURN"), remap = false)
+    private void postRenderParticles(MatrixStack matrixStack, IRenderTypeBuffer.Impl immediate, LightTexture lightmapTextureManager, ActiveRenderInfo camera, float f, @Nullable ClippingHelper clippingHelper, CallbackInfo info) {
         // Ensure particles don't linger in the temporary collection
         this.cachedQueue.clear();
     }

@@ -10,13 +10,13 @@ import me.jellysquid.mods.sodium.client.gui.options.control.ControlElement;
 import me.jellysquid.mods.sodium.client.gui.options.storage.OptionStorage;
 import me.jellysquid.mods.sodium.client.gui.widgets.FlatButtonWidget;
 import me.jellysquid.mods.sodium.client.util.Dim2i;
-import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.IRenderable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.VideoSettingsScreen;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.IReorderingProcessor;
 import net.minecraft.util.text.ITextProperties;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -204,8 +204,8 @@ public class SodiumOptionsGUI extends Screen {
 
         ITextProperties title = new StringTextComponent(option.getName()).mergeStyle(TextFormatting.GRAY);
 
-        List<ITextProperties> text = this.font.func_238425_b_(title, textWidth);
-        text.addAll(this.font.func_238425_b_(option.getTooltip(), textWidth));
+        List<IReorderingProcessor> text = new ArrayList<>(this.font.trimStringToWidth(title, textWidth));
+        text.addAll(this.font.trimStringToWidth(option.getTooltip(), textWidth));
 
         int boxHeight = (text.size() * 12) + boxPadding;
         int boxYLimit = boxY + boxHeight;
@@ -219,9 +219,11 @@ public class SodiumOptionsGUI extends Screen {
         this.fillGradient(matrixStack, boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xE0000000, 0xE0000000);
 
         for (int i = 0; i < text.size(); i++) {
-            ITextProperties str = text.get(i);
+            IReorderingProcessor str = text.get(i);
 
-            if (str.getString().isEmpty()) {
+
+
+            if (font.getCharacterManager().func_243238_a(str) < 0) {
                 continue;
             }
 
